@@ -22,7 +22,11 @@ SERVICE_USER="$(whoami)"
 
 echo "==> Installing system packages"
 sudo apt-get update
-sudo apt-get install -y curl git python3 python3-venv python3-pip build-essential
+# mecab/libmecab-dev: build dependency of fugashi, which MeloTTS pulls in
+# for Japanese tokenization even though we only use it for English/Hindi -
+# its install fails without these.
+sudo apt-get install -y curl git python3 python3-venv python3-pip build-essential \
+  mecab libmecab-dev mecab-ipadic-utf8
 
 if ! command -v node >/dev/null 2>&1; then
   echo "==> Installing Node.js 22.x"
@@ -99,7 +103,7 @@ fi
 
 echo
 echo "Setup done. Still needed before starting:"
-echo "  1. Edit .env and set ANTHROPIC_API_KEY (ADMIN_TOKEN was generated for you)."
+echo "  1. Edit .env and set OPENAI_API_KEY (ADMIN_TOKEN was generated for you)."
 echo "  2. sudo systemctl enable --now voice-speech"
 echo "  3. sudo systemctl enable --now voice-agent"
 if [ -n "$DOMAIN" ]; then

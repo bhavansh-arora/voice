@@ -250,7 +250,7 @@ or care which one is driving it, and both get recorded/logged identically.
    and restart on failure or reboot, and - only if you passed a domain -
    installs nginx as a reverse proxy in front of the app and gets it a
    free TLS certificate via Let's Encrypt/certbot.
-2. Edit `.env` and set `ANTHROPIC_API_KEY`.
+2. Edit `.env` and set `OPENAI_API_KEY`.
 3. `sudo systemctl enable --now voice-speech` then
    `sudo systemctl enable --now voice-agent`. Check status/logs with
    `systemctl status voice-agent` / `journalctl -u voice-agent -f`.
