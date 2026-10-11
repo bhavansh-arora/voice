@@ -35,6 +35,12 @@ source .venv/bin/activate
 
 pip install -r requirements.txt
 
+# CPU-only torch - installing this first means MeloTTS's own install
+# (which depends on torch) finds it already satisfied and skips the
+# default PyPI wheel, which pulls several GB of CUDA libraries you don't
+# need for an all-CPU setup.
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+
 # MeloTTS isn't on a requirements-friendly index; install from source and
 # run its one-time data download.
 pip install git+https://github.com/myshell-ai/MeloTTS.git

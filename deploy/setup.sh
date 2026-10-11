@@ -45,6 +45,12 @@ if [ ! -d .venv ]; then
 fi
 ./.venv/bin/pip install --upgrade pip
 ./.venv/bin/pip install -r requirements.txt
+# CPU-only torch build - the default PyPI wheel pulls several GB of CUDA
+# libraries (nvidia-*) nothing here uses, since this whole project runs
+# CPU-only. Installing it first means MeloTTS's own install (next line,
+# which otherwise pulls the GPU build as a dependency) finds it already
+# satisfied and leaves it alone.
+./.venv/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu
 ./.venv/bin/pip install git+https://github.com/myshell-ai/MeloTTS.git
 ./.venv/bin/python -m unidic download
 
