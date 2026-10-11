@@ -31,14 +31,22 @@ bytes to `POST /transcribe` (`src/services/localStt.ts`), getting back
 First, some system packages the Python deps below need to build (Debian/Ubuntu):
 
 ```bash
-sudo apt-get install -y build-essential mecab libmecab-dev mecab-ipadic-utf8 rustc cargo
+sudo apt-get install -y build-essential mecab libmecab-dev mecab-ipadic-utf8
 ```
 
 `mecab`/`libmecab-dev` are needed by `fugashi` (a MeloTTS dependency for
 Japanese tokenization, even though this project only uses English/Hindi).
-`rustc`/`cargo` are needed if pip has to compile `tokenizers` from source,
-which happens whenever there's no prebuilt wheel for your exact
-Python/platform combo.
+
+If pip has to compile `tokenizers` from source - which happens whenever
+there's no prebuilt wheel for your exact Python/platform combo - it needs
+a Rust toolchain newer than what Debian/Ubuntu's own `rustc` package
+ships (that one reliably errors on `tokenizers`' current dependency tree
+with "feature `edition2024` is required"). Use rustup instead:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+source "$HOME/.cargo/env"
+```
 
 ```bash
 cd tts-service

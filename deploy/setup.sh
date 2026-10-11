@@ -25,11 +25,20 @@ sudo apt-get update
 # mecab/libmecab-dev: build dependency of fugashi, which MeloTTS pulls in
 # for Japanese tokenization even though we only use it for English/Hindi -
 # its install fails without these.
-# rustc/cargo: on a platform/Python combo with no prebuilt `tokenizers`
-# wheel on PyPI, pip falls back to compiling it from source, which needs
-# a Rust toolchain - without this, that build fails outright.
 sudo apt-get install -y curl git python3 python3-venv python3-pip build-essential \
-  mecab libmecab-dev mecab-ipadic-utf8 rustc cargo
+  mecab libmecab-dev mecab-ipadic-utf8
+
+# On a platform/Python combo with no prebuilt `tokenizers` wheel on PyPI,
+# pip falls back to compiling it from source, which needs a Rust
+# toolchain new enough for `tokenizers`' current dependency tree -
+# Debian/Ubuntu's own rustc package is reliably too old for this, so
+# remove it and use rustup instead, which always gets current stable.
+sudo apt-get remove -y rustc cargo 2>/dev/null || true
+if [ ! -x "$HOME/.cargo/bin/cargo" ]; then
+  echo "==> Installing Rust via rustup (distro rustc is reliably too old)"
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+fi
+export PATH="$HOME/.cargo/bin:$PATH"
 
 if ! command -v node >/dev/null 2>&1; then
   echo "==> Installing Node.js 22.x"
