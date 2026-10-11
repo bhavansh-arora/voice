@@ -31,17 +31,21 @@ bytes to `POST /transcribe` (`src/services/localStt.ts`), getting back
 First, some system packages the Python deps below need to build (Debian/Ubuntu):
 
 ```bash
-sudo apt-get install -y build-essential mecab libmecab-dev mecab-ipadic-utf8
+sudo apt-get install -y build-essential mecab libmecab-dev mecab-ipadic-utf8 pkg-config libssl-dev
 ```
 
 `mecab`/`libmecab-dev` are needed by `fugashi` (a MeloTTS dependency for
 Japanese tokenization, even though this project only uses English/Hindi).
 
-If pip has to compile `tokenizers` from source - which happens whenever
-there's no prebuilt wheel for your exact Python/platform combo - it needs
-a Rust toolchain newer than what Debian/Ubuntu's own `rustc` package
-ships (that one reliably errors on `tokenizers`' current dependency tree
-with "feature `edition2024` is required"). Use rustup instead:
+`pkg-config`/`libssl-dev` plus a Rust toolchain (below) are needed if pip
+has to compile `tokenizers` from source. This isn't an edge case worth
+hoping to avoid: MeloTTS pins `transformers==4.27.4`, which caps
+`tokenizers<0.14`, and the newest version in that range (`0.13.3`) has no
+prebuilt wheel for Python 3.12+ at all (confirmed on PyPI - its last
+wheel builds stop at cp311) - so on any current Python, this from-source
+build is guaranteed, not occasional. Debian/Ubuntu's own `rustc` package
+fails on it too (it reliably errors "feature `edition2024` is required"
+on one of its Rust-side dependencies), so use rustup instead:
 
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable

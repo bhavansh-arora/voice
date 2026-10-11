@@ -23,10 +23,12 @@ SERVICE_USER="$(whoami)"
 echo "==> Installing system packages"
 sudo apt-get update
 # mecab/libmecab-dev: build dependency of fugashi, which MeloTTS pulls in
-# for Japanese tokenization even though we only use it for English/Hindi -
-# its install fails without these.
+# for Japanese tokenization even though we only use it for English/Hindi.
+# pkg-config/libssl-dev: needed by the openssl-sys Rust crate if
+# tokenizers has to be compiled from source (see below) - without these,
+# cargo can't locate OpenSSL even when it's installed.
 sudo apt-get install -y curl git python3 python3-venv python3-pip build-essential \
-  mecab libmecab-dev mecab-ipadic-utf8
+  mecab libmecab-dev mecab-ipadic-utf8 pkg-config libssl-dev
 
 # On a platform/Python combo with no prebuilt `tokenizers` wheel on PyPI,
 # pip falls back to compiling it from source, which needs a Rust
