@@ -28,6 +28,18 @@ bytes to `POST /transcribe` (`src/services/localStt.ts`), getting back
 
 ## Setup
 
+First, some system packages the Python deps below need to build (Debian/Ubuntu):
+
+```bash
+sudo apt-get install -y build-essential mecab libmecab-dev mecab-ipadic-utf8 rustc cargo
+```
+
+`mecab`/`libmecab-dev` are needed by `fugashi` (a MeloTTS dependency for
+Japanese tokenization, even though this project only uses English/Hindi).
+`rustc`/`cargo` are needed if pip has to compile `tokenizers` from source,
+which happens whenever there's no prebuilt wheel for your exact
+Python/platform combo.
+
 ```bash
 cd tts-service
 python3 -m venv .venv
