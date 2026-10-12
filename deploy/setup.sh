@@ -24,23 +24,27 @@ echo "==> Installing system packages"
 sudo apt-get update
 # mecab/libmecab-dev: build dependency of fugashi, which MeloTTS pulls in
 # for Japanese tokenization even though we only use it for English/Hindi.
-# pkg-config/libssl-dev: needed by the openssl-sys Rust crate if
-# tokenizers has to be compiled from source (see below) - without these,
-# cargo can't locate OpenSSL even when it's installed.
 sudo apt-get install -y curl git python3 python3-venv python3-pip build-essential \
-  mecab libmecab-dev mecab-ipadic-utf8 pkg-config libssl-dev
+  mecab libmecab-dev mecab-ipadic-utf8
 
-# On a platform/Python combo with no prebuilt `tokenizers` wheel on PyPI,
-# pip falls back to compiling it from source, which needs a Rust
-# toolchain new enough for `tokenizers`' current dependency tree -
-# Debian/Ubuntu's own rustc package is reliably too old for this, so
-# remove it and use rustup instead, which always gets current stable.
-sudo apt-get remove -y rustc cargo 2>/dev/null || true
-if [ ! -x "$HOME/.cargo/bin/cargo" ]; then
-  echo "==> Installing Rust via rustup (distro rustc is reliably too old)"
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+# MeloTTS pins transformers==4.27.4, which caps tokenizers<0.14 - and the
+# newest version in that range (0.13.3) has no prebuilt wheel for Python
+# 3.12+ on PyPI at all, forcing a from-source build. That build needs a
+# Rust toolchain, but there's no single rustc version that works: it
+# needs a *newer* one for one of its own dependencies (clap_lex requires
+# the edition2024 cargo feature) while its *own* source code fails to
+# compile on that same newer rustc (stricter lifetime checks than existed
+# when 0.13.3 was published in 2023). Rather than fight that, give the
+# tts-service venv its own Python 3.11 (via uv, which installs a portable
+# build - no distro package repo involved) so pip picks tokenizers'
+# existing prebuilt wheel instead of ever trying to compile it.
+if ! command -v uv >/dev/null 2>&1 && [ ! -x "$HOME/.local/bin/uv" ]; then
+  echo "==> Installing uv (to get a Python 3.11 independent of the OS)"
+  curl -LsSf https://astral.sh/uv/install.sh | sh
 fi
-export PATH="$HOME/.cargo/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+uv python install 3.11
+PYTHON_3_11="$(uv python find 3.11)"
 
 if ! command -v node >/dev/null 2>&1; then
   echo "==> Installing Node.js 22.x"
@@ -52,10 +56,10 @@ echo "==> Installing Node dependencies and building"
 npm install
 npm run build
 
-echo "==> Setting up tts-service (Python venv)"
+echo "==> Setting up tts-service (Python 3.11 venv)"
 cd "$REPO_DIR/tts-service"
 if [ ! -d .venv ]; then
-  python3 -m venv .venv
+  "$PYTHON_3_11" -m venv .venv
 fi
 ./.venv/bin/pip install --upgrade pip
 ./.venv/bin/pip install -r requirements.txt

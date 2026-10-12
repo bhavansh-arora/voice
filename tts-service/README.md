@@ -31,30 +31,35 @@ bytes to `POST /transcribe` (`src/services/localStt.ts`), getting back
 First, some system packages the Python deps below need to build (Debian/Ubuntu):
 
 ```bash
-sudo apt-get install -y build-essential mecab libmecab-dev mecab-ipadic-utf8 pkg-config libssl-dev
+sudo apt-get install -y build-essential mecab libmecab-dev mecab-ipadic-utf8
 ```
 
 `mecab`/`libmecab-dev` are needed by `fugashi` (a MeloTTS dependency for
 Japanese tokenization, even though this project only uses English/Hindi).
 
-`pkg-config`/`libssl-dev` plus a Rust toolchain (below) are needed if pip
-has to compile `tokenizers` from source. This isn't an edge case worth
-hoping to avoid: MeloTTS pins `transformers==4.27.4`, which caps
+**Use Python 3.11 for this venv specifically, not whatever `python3` is
+on a newer OS.** MeloTTS pins `transformers==4.27.4`, which caps
 `tokenizers<0.14`, and the newest version in that range (`0.13.3`) has no
-prebuilt wheel for Python 3.12+ at all (confirmed on PyPI - its last
-wheel builds stop at cp311) - so on any current Python, this from-source
-build is guaranteed, not occasional. Debian/Ubuntu's own `rustc` package
-fails on it too (it reliably errors "feature `edition2024` is required"
-on one of its Rust-side dependencies), so use rustup instead:
+prebuilt wheel for Python 3.12+ on PyPI at all (confirmed directly - its
+last wheel builds stop at cp311). On Python 3.12+, pip falls back to
+compiling `tokenizers` from source, which hits a dead end: it needs a
+newer Rust toolchain for one of its own dependencies (`clap_lex` requires
+the `edition2024` cargo feature), but its *own* source code then fails to
+compile on that same newer Rust (stricter lifetime checks than existed
+when it was published in 2023) - there's no single Rust version that
+satisfies both sides. Sidestep all of it with a Python 3.11 venv instead,
+via [uv](https://docs.astral.sh/uv/) (installs a portable Python build,
+independent of your OS's package repos):
 
 ```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
-source "$HOME/.cargo/env"
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source "$HOME/.local/bin/env" 2>/dev/null || export PATH="$HOME/.local/bin:$PATH"
+uv python install 3.11
 ```
 
 ```bash
 cd tts-service
-python3 -m venv .venv
+"$(uv python find 3.11)" -m venv .venv
 source .venv/bin/activate
 
 pip install -r requirements.txt
