@@ -105,7 +105,7 @@ sed -e "s#__REPO_DIR__#${REPO_DIR}#g" -e "s#__SERVICE_USER__#${SERVICE_USER}#g" 
 sudo systemctl daemon-reload
 
 if [ -n "$DOMAIN" ]; then
-  APP_PORT="$(grep '^PORT=' .env | cut -d= -f2)"
+  APP_PORT="$(grep '^PORT=' .env | cut -d= -f2 || true)"
   APP_PORT="${APP_PORT:-3000}"
 
   echo "==> Installing nginx + certbot for ${DOMAIN}"
