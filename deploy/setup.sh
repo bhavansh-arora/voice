@@ -63,12 +63,13 @@ if [ ! -d .venv ]; then
 fi
 ./.venv/bin/pip install --upgrade pip
 ./.venv/bin/pip install -r requirements.txt
-# CPU-only torch build - the default PyPI wheel pulls several GB of CUDA
-# libraries (nvidia-*) nothing here uses, since this whole project runs
-# CPU-only. Installing it first means MeloTTS's own install (next line,
-# which otherwise pulls the GPU build as a dependency) finds it already
-# satisfied and leaves it alone.
-./.venv/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu
+# CPU-only torch + torchaudio builds - the default PyPI wheels pull in
+# CUDA libraries (nvidia-*, and torchaudio's compiled extension links
+# against libcudart.so) nothing here uses, since this whole project runs
+# CPU-only. Installing both from PyTorch's CPU index first means
+# MeloTTS's own install (next line, which otherwise pulls the GPU builds
+# as dependencies) finds them already satisfied and leaves them alone.
+./.venv/bin/pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
 ./.venv/bin/pip install git+https://github.com/myshell-ai/MeloTTS.git
 # unidic download pulls a ~530MB dictionary with no built-in skip-if-
 # present check of its own - guard it so re-running this script doesn't

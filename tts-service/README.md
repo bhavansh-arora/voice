@@ -64,11 +64,12 @@ source .venv/bin/activate
 
 pip install -r requirements.txt
 
-# CPU-only torch - installing this first means MeloTTS's own install
-# (which depends on torch) finds it already satisfied and skips the
-# default PyPI wheel, which pulls several GB of CUDA libraries you don't
-# need for an all-CPU setup.
-pip install torch --index-url https://download.pytorch.org/whl/cpu
+# CPU-only torch + torchaudio - installing these first means MeloTTS's
+# own install (which depends on both) finds them already satisfied and
+# skips the default PyPI wheels, which pull in CUDA libraries you don't
+# need for an all-CPU setup (torchaudio's compiled extension specifically
+# links against libcudart.so and fails to even import without it).
+pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
 
 # MeloTTS isn't on a requirements-friendly index; install from source and
 # run its one-time data download.
