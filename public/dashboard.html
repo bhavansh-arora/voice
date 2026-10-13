@@ -5,8 +5,7 @@
 <title>Test — Voice Agent</title>
 <link rel="stylesheet" href="app.css" />
 <style>
-  body { display: flex; flex-direction: column; align-items: center; }
-  .card { width: 100%; max-width: 640px; }
+  .page.narrow { max-width: 640px; }
   .controls { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
   #toggle.active { background: var(--error); }
   .transcript {
@@ -27,7 +26,7 @@
 </style>
 </head>
 <body>
-  <div class="nav" style="width:100%; max-width:640px; margin-bottom:20px; border-radius:10px;">
+  <div class="nav">
     <span class="brand">Voice Agent</span>
     <a href="index.html">Home</a>
     <a href="setup.html">Setup</a>
@@ -37,23 +36,34 @@
     <a href="dashboard.html" class="active">Test</a>
   </div>
 
-  <div class="card">
-    <h1>Test Dashboard</h1>
-    <p class="subtitle">
-      Talk to the same AI pipeline a real phone call uses. Audio is downsampled
-      to 8kHz in both directions, same as a phone line, so this sounds exactly
-      like the real thing.
-    </p>
-    <div class="field">
-      <label>Agent</label>
-      <select id="agentPicker"></select>
-    </div>
-    <div class="controls">
-      <button id="toggle">Start conversation</button>
-      <span id="status" class="status">idle</span>
-    </div>
-    <div id="transcript" class="transcript">
-      <div class="empty">Pick an agent, click "Start conversation," and allow microphone access.</div>
+  <div class="page narrow">
+    <div class="card">
+      <h1>Test Dashboard</h1>
+      <p class="subtitle">
+        Talk to the same AI pipeline a real phone call uses. Audio is downsampled
+        to 8kHz in both directions, same as a phone line, so this sounds exactly
+        like the real thing.
+      </p>
+      <div class="howto">
+        <strong>How to use this:</strong>
+        <ol>
+          <li>Pick which agent to test from the dropdown below.</li>
+          <li>Click <strong>Start conversation</strong> and allow microphone access when your browser asks.</li>
+          <li>Just talk - in English or Hindi. The agent replies out loud and the transcript below fills in live.</li>
+          <li>Click <strong>End conversation</strong> when you're done.</li>
+        </ol>
+      </div>
+      <div class="field">
+        <label>Agent</label>
+        <select id="agentPicker"></select>
+      </div>
+      <div class="controls">
+        <button id="toggle">Start conversation</button>
+        <span id="status" class="status">idle</span>
+      </div>
+      <div id="transcript" class="transcript">
+        <div class="empty">Pick an agent, click "Start conversation," and allow microphone access.</div>
+      </div>
     </div>
   </div>
 
