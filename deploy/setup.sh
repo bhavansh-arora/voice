@@ -115,6 +115,11 @@ if [ -n "$DOMAIN" ]; then
     deploy/nginx.conf.template | sudo tee "/etc/nginx/sites-available/${DOMAIN}" >/dev/null
   sudo ln -sf "/etc/nginx/sites-available/${DOMAIN}" "/etc/nginx/sites-enabled/${DOMAIN}"
   sudo nginx -t
+  # `reload` only works on an already-running service and fails outright
+  # (killing this script under set -e) if nginx was installed but never
+  # started - `enable --now` covers both "never started" and "needs the
+  # new config" in one idempotent step.
+  sudo systemctl enable --now nginx
   sudo systemctl reload nginx
 
   if command -v ufw >/dev/null 2>&1; then
