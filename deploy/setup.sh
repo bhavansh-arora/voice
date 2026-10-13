@@ -70,7 +70,12 @@ fi
 # satisfied and leaves it alone.
 ./.venv/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu
 ./.venv/bin/pip install git+https://github.com/myshell-ai/MeloTTS.git
-./.venv/bin/python -m unidic download
+# unidic download pulls a ~530MB dictionary with no built-in skip-if-
+# present check of its own - guard it so re-running this script doesn't
+# redownload it every time.
+if ! ./.venv/bin/python -c "import unidic, os, sys; sys.exit(0 if os.listdir(unidic.DICDIR) else 1)" 2>/dev/null; then
+  ./.venv/bin/python -m unidic download
+fi
 
 mkdir -p models
 echo "==> Downloading Piper Hindi voice models (pratham, priyamvada)"
