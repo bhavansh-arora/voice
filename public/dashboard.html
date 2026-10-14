@@ -261,7 +261,8 @@
     ws.onclose = () => {
       if (!openedSuccessfully) {
         setStatus("error");
-        alert("Connection rejected - check the ?token= you opened this page with matches the server's ADMIN_TOKEN.");
+        alert("Connection rejected - your session may have expired. Try signing in again.");
+        location.href = "/login.html";
       }
       stop(true);
     };

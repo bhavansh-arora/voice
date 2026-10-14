@@ -4,7 +4,7 @@ import { CallSession, type CallTransport } from "./callSession";
 import { getAgent, getDefaultAgent } from "../db/agents";
 import { startCall, appendTranscriptTurn, mergeCollectedData, endCall } from "../db/calls";
 import { CallRecorder } from "./callRecorder";
-import { isAuthorized } from "./adminAuth";
+import { isAuthorizedUpgradeRequest } from "./adminAuth";
 
 /**
  * The browser testing dashboard talks the simplest possible protocol over
@@ -15,16 +15,17 @@ import { isAuthorized } from "./adminAuth";
  * relayed straight from CallSession, for the live transcript/status view.
  *
  * This WebSocket can run a real, billed conversation (OpenAI + the local
- * speech services), so it's gated by the same ADMIN_TOKEN as the rest of
- * the admin surface - see adminAuth.ts.
+ * speech services), so it's gated by the same admin session as the rest
+ * of the admin surface - see adminAuth.ts. The browser WebSocket API
+ * can't set custom headers, but it does send cookies on same-origin
+ * connections, so the signed-in session cookie covers this automatically.
  */
 export function attachDashboardServer(httpServer: HttpServer, path = "/dashboard"): WebSocketServer {
   const wss = new WebSocketServer({
     server: httpServer,
     path,
     verifyClient: ({ req }, done) => {
-      const url = new URL(req.url ?? "", "http://localhost");
-      done(isAuthorized(url.searchParams.get("token")));
+      done(isAuthorizedUpgradeRequest(req));
     },
   });
 

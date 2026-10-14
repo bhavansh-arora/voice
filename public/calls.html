@@ -100,8 +100,9 @@
   }
 
   function recordingUrl(callId) {
-    const token = AdminApp.token;
-    return `/api/calls/${callId}/recording${token ? `?token=${encodeURIComponent(token)}` : ""}`;
+    // The session cookie goes along automatically on this same-origin
+    // request - no token needed in the URL.
+    return `/api/calls/${callId}/recording`;
   }
 
   document.getElementById("backBtn").addEventListener("click", showList);

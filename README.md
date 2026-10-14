@@ -153,8 +153,10 @@ speaking in Hindi partway through the call and it should switch.
 
 Everything below lives behind one Express server (`src/server.ts`) and a
 no-build-step static frontend in `public/`. Open
-**`http://localhost:3000/`** (locally; add `?token=<ADMIN_TOKEN>` once on a
-VPS, see below) and it walks you through:
+**`http://localhost:3000/`** and sign in at the login page with
+`ADMIN_TOKEN` from `.env` (any password works if you haven't set one,
+which is fine for local dev) - that sets a session cookie covering every
+admin page below it. It walks you through:
 
 - **Home** (`index.html`) — your list of agents. Each one is an
   independent configuration (intro line, data to collect, voices,
@@ -193,9 +195,10 @@ VPS, see below) and it walks you through:
 - **Test** (`dashboard.html`) — see the next section. The agent picker at
   the top lets you test any agent, not just the active one.
 
-All of it (every `/api/*` route and the `/dashboard` WebSocket) is gated by
-a single `ADMIN_TOKEN` - see "Deploying to a VPS" below for how that token
-gets to the browser.
+All of it (every `/api/*` route, every admin page, and the `/dashboard`
+WebSocket) is gated by the same session cookie, set once at `/login.html`
+(`src/services/adminAuth.ts`) - there's no token to carry around in URLs.
+Visiting any admin page while signed out redirects there automatically.
 
 ### Call recording and data collection
 
@@ -272,14 +275,13 @@ Two ways to actually reach it:
   only allow microphone access (`getUserMedia`) over HTTPS or `localhost` -
   a bare `http://<ip>:3000` can't use the mic at all, which is why this
   matters beyond just security. Once that's done, open
-  `https://<your-domain>/?token=<the ADMIN_TOKEN from .env>` once; the
-  frontend (`public/app.js`) reads the token from that URL, stores it for
-  the rest of the browser session, strips it back out of the visible URL,
-  and carries it to every admin page (`index.html`, `dashboard.html`,
-  etc.) you navigate to from there. If you add the domain later, re-run
-  `bash deploy/setup.sh <domain>` - it's safe to re-run.
+  `https://<your-domain>/login.html` and sign in with the `ADMIN_TOKEN`
+  from `.env` - that sets a session cookie good for 30 days, covering
+  every admin page from there on (no token in any URL to carry around).
+  If you add the domain later, re-run `bash deploy/setup.sh <domain>` -
+  it's safe to re-run.
 - **Without a domain** - an SSH tunnel: `ssh -L 3000:localhost:3000
-  you@your-vps`, then open `http://localhost:3000/?token=...` on your own
+  you@your-vps`, then open `http://localhost:3000/login.html` on your own
   machine. This also satisfies the HTTPS-or-localhost rule above since the
   browser sees it as `localhost`, but it only works from the machine
   running the tunnel.

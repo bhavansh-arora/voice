@@ -138,14 +138,16 @@ fi
 
 echo
 echo "Setup done. Still needed before starting:"
-echo "  1. Edit .env and set OPENAI_API_KEY (ADMIN_TOKEN was generated for you)."
+echo "  1. Edit .env and set OPENAI_API_KEY (ADMIN_TOKEN was generated for you -"
+echo "     that's the password you'll type into the login page)."
 echo "  2. sudo systemctl enable --now voice-speech"
 echo "  3. sudo systemctl enable --now voice-agent"
 if [ -n "$DOMAIN" ]; then
-  echo "  4. Open https://${DOMAIN}/?token=<the ADMIN_TOKEN from .env>"
+  echo "  4. Open https://${DOMAIN}/login.html and sign in with the ADMIN_TOKEN from .env"
 else
   echo "  4. Reach the dashboard via an SSH tunnel (recommended, see README) or"
-  echo "     open the firewall per the README if you want it directly reachable."
+  echo "     open the firewall per the README if you want it directly reachable -"
+  echo "     then open /login.html and sign in with the ADMIN_TOKEN from .env."
   echo "     Or re-run this script with a domain already pointed at this VPS"
   echo "     to set up HTTPS automatically: bash deploy/setup.sh yourdomain.com"
 fi
