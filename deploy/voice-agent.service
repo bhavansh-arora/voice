@@ -1,7 +1,6 @@
 [Unit]
 Description=Voice Agent (Node) - AI phone/dashboard call handler
-After=network.target voice-speech.service
-Wants=voice-speech.service
+After=network.target
 StartLimitIntervalSec=600
 StartLimitBurst=5
 
