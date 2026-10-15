@@ -150,6 +150,37 @@ apiRouter.get("/calls/:id/recording", (req, res) => {
     res.status(404).json({ error: "No recording for this call" });
     return;
   }
+
+  // Serving the whole file with no Content-Length/Range support leaves the
+  // browser's <audio> element with no way to know where in the stream it
+  // is, so its seek bar can't fulfill a drag and just snaps back - this is
+  // what makes HTTP Range support necessary for the scrubber to work at
+  // all, not just an optimization.
+  const { size } = fs.statSync(call.recordingPath);
   res.set("Content-Type", "audio/wav");
-  fs.createReadStream(call.recordingPath).pipe(res);
+  res.set("Accept-Ranges", "bytes");
+
+  const range = req.headers.range;
+  if (!range) {
+    res.set("Content-Length", String(size));
+    fs.createReadStream(call.recordingPath).pipe(res);
+    return;
+  }
+
+  const match = /^bytes=(\d*)-(\d*)$/.exec(range);
+  if (!match || (!match[1] && !match[2])) {
+    res.status(416).set("Content-Range", `bytes */${size}`).end();
+    return;
+  }
+  const start = match[1] ? Number(match[1]) : size - Number(match[2]);
+  const end = match[2] && match[1] ? Number(match[2]) : size - 1;
+  if (Number.isNaN(start) || Number.isNaN(end) || start > end || start < 0 || end >= size) {
+    res.status(416).set("Content-Range", `bytes */${size}`).end();
+    return;
+  }
+
+  res.status(206);
+  res.set("Content-Range", `bytes ${start}-${end}/${size}`);
+  res.set("Content-Length", String(end - start + 1));
+  fs.createReadStream(call.recordingPath, { start, end }).pipe(res);
 });
