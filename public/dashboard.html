@@ -208,7 +208,15 @@
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     nextPlayTime = audioCtx.currentTime;
 
-    micStream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1 } });
+    // Explicit (not relying on browser defaults) because this page plays the
+    // agent's reply out of the same device's speakers it's recording from -
+    // without echo cancellation, that playback bleeds back into the mic and
+    // the VAD reads it as the caller interrupting (false "barge-in"). Doesn't
+    // apply to real phone calls (no local speaker-to-mic loop there), but
+    // matters a lot here. Use headphones when testing for the cleanest signal.
+    micStream = await navigator.mediaDevices.getUserMedia({
+      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+    });
 
     const agentId = document.getElementById("agentPicker").value;
     if (agentId) AgentContext.set(agentId);
