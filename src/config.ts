@@ -33,9 +33,18 @@ export const config = {
     // voice call. Swap to a different OpenAI model via OPENAI_MODEL if you
     // want more quality at the cost of latency.
     model: process.env.OPENAI_MODEL ?? "gpt-4o-mini",
+    // Speech (STT + TTS) also runs through OpenAI's API by default -- see
+    // src/services/openaiTts.ts / openaiStt.ts. This replaced the
+    // originally self-hosted Piper/MeloTTS/Whisper pipeline in
+    // tts-service/ (still in the repo, unused by default) after that
+    // pipeline's memory footprint (1GB+) proved too large to share a small
+    // VPS with other sites.
+    ttsModel: process.env.OPENAI_TTS_MODEL ?? "tts-1",
+    sttModel: process.env.OPENAI_STT_MODEL ?? "whisper-1",
   },
 
-  // Fully self-hosted speech (STT + TTS) - see tts-service/. No cloud speech API involved.
+  // Only relevant if you switch back to the self-hosted tts-service/
+  // pipeline (src/services/localTts.ts, localStt.ts) -- unused by default.
   localSpeechServiceUrl: process.env.LOCAL_SPEECH_SERVICE_URL ?? "http://127.0.0.1:8001",
 
   // Shared secret guarding every admin surface: the /dashboard WebSocket,

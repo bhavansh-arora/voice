@@ -4,7 +4,7 @@ import { createAgent, getAgent, listAgents, updateAgent } from "../db/agents";
 import { getCall, listCalls } from "../db/calls";
 import { runSetupChat } from "../services/setupChat";
 import { VOICE_CATALOG, getVoice, sampleTextFor } from "../services/voices";
-import { synthesizeWithVoice } from "../services/localTts";
+import { synthesizeWithVoice } from "../services/openaiTts";
 import { generateAsteriskConfig } from "../services/telephony";
 import { config } from "../config";
 import type { AgentConfig, TelephonyVendorConfig } from "../services/agentConfig";

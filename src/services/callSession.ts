@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
 import { streamReply, type ChatMessage } from "./llm";
-import { synthesizeSpeech } from "./localTts";
-import { transcribeSpeech } from "./localStt";
+import { synthesizeSpeech } from "./openaiTts";
+import { transcribeSpeech } from "./openaiStt";
 import { convertWavToPcm16_8k, buildWavFromPcm16_8k, sendPaced } from "../utils/audio";
 import { UtteranceDetector } from "../utils/vad";
 import { SentenceSplitter } from "../utils/sentenceSplitter";

@@ -1,25 +1,26 @@
 export interface VoiceOption {
+  /** OpenAI TTS voice name, e.g. "onyx" -- passed straight through as the "voice" parameter. */
   id: string;
   language: "en" | "hi";
-  engine: "piper" | "melo";
+  engine: "openai";
   label: string;
   accent: string;
 }
 
 /**
- * Every voice this app can speak with. Hindi voices are separate Piper
- * model files that must be downloaded (see tts-service/README.md); English
- * "voices" are just different speakers within the one MeloTTS checkpoint,
- * so they all work with no extra download.
+ * Every voice this app can speak with. All of these are OpenAI TTS voices
+ * (see src/services/openaiTts.ts) -- the same voice can technically speak
+ * either language, so this split into two language groups is just for a
+ * sensible admin-picker UI, not a real capability limit the way Piper vs.
+ * MeloTTS used to be.
  */
 export const VOICE_CATALOG: VoiceOption[] = [
-  { id: "hi_IN-pratham-medium", language: "hi", engine: "piper", label: "Pratham", accent: "Hindi - male" },
-  { id: "hi_IN-priyamvada-medium", language: "hi", engine: "piper", label: "Priyamvada", accent: "Hindi - female" },
-  { id: "EN_INDIA", language: "en", engine: "melo", label: "Indian English", accent: "English - Indian accent" },
-  { id: "EN-US", language: "en", engine: "melo", label: "American English", accent: "English - US accent" },
-  { id: "EN-BR", language: "en", engine: "melo", label: "British English", accent: "English - British accent" },
-  { id: "EN-AU", language: "en", engine: "melo", label: "Australian English", accent: "English - Australian accent" },
-  { id: "EN-Default", language: "en", engine: "melo", label: "Default English", accent: "English - neutral accent" },
+  { id: "onyx", language: "hi", engine: "openai", label: "Onyx", accent: "Deep, authoritative" },
+  { id: "shimmer", language: "hi", engine: "openai", label: "Shimmer", accent: "Soft, gentle" },
+  { id: "echo", language: "hi", engine: "openai", label: "Echo", accent: "Clear, direct" },
+  { id: "alloy", language: "en", engine: "openai", label: "Alloy", accent: "Balanced, neutral" },
+  { id: "nova", language: "en", engine: "openai", label: "Nova", accent: "Warm" },
+  { id: "fable", language: "en", engine: "openai", label: "Fable", accent: "Expressive" },
 ];
 
 const SAMPLE_TEXT: Record<"en" | "hi", string> = {

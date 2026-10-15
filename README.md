@@ -3,10 +3,13 @@
 A phone-based conversational agent that answers real phone calls and talks
 back like a person, not a script-reading bot. It's bilingual: callers can
 speak English or Hindi and switch between them mid-call, and the agent
-answers in kind, in an Indian-accented voice. Speech processing (hearing
-the caller, speaking back) is fully self-hosted, and telephony has no
-cloud API or vendor lock-in either — you run your own PBX and can plug in
-whichever SIP trunk provider you like.
+answers in kind. Telephony has no cloud API or vendor lock-in — you run
+your own PBX and can plug in whichever SIP trunk provider you like. Speech
+processing (hearing the caller, speaking back) runs through OpenAI's
+hosted speech APIs by default (see "Speech-to-text"/"Text-to-speech"
+below) — a fully self-hosted alternative (Whisper/Piper/MeloTTS, no cloud
+speech API at all) also still exists in this repo if you'd rather run
+your own models; see "Switching speech providers" further down.
 
 It's built from independent pieces wired together over a phone call, rather
 than one bundled "speech-to-speech" API:
@@ -20,28 +23,42 @@ than one bundled "speech-to-speech" API:
   an Indian number is unavoidably regulated, see below) is Asterisk's
   problem; this app never talks to a telephony vendor's API directly, so
   the provider is swappable with a one-line dialplan/trunk config change.
-- **Speech-to-text:** fully self-hosted, no cloud STT API at all. A local
-  voice-activity detector (`src/utils/vad.ts`) buffers and segments the
-  caller's audio itself, and each finished utterance is transcribed by a
-  self-hosted [Whisper](https://github.com/SYSTRAN/faster-whisper) model
-  (via `faster-whisper`) running in `tts-service/`, which also reports
-  whether it heard English or Hindi.
+- **Speech-to-text:** a local voice-activity detector (`src/utils/vad.ts`)
+  buffers and segments the caller's audio itself, and each finished
+  utterance is sent to OpenAI's transcription API
+  (`src/services/openaiStt.ts`, `whisper-1` by default), which also
+  reports whether it heard English or Hindi.
 - **Conversation:** [OpenAI's GPT](https://platform.openai.com) generates
   replies with a system prompt tuned for spoken, human-sounding dialogue in
   either language — short turns, contractions, no lists or markdown,
   natural acknowledgements — and always answers in whichever language the
   caller just used.
-- **Text-to-speech:** also fully self-hosted. The same local service runs
-  two more open-source models in-process: [Piper](https://github.com/OHF-Voice/piper1-gpl)
-  for Hindi (a native Hindi voice), and [MeloTTS](https://github.com/myshell-ai/MeloTTS)'s
-  `EN_INDIA` speaker for English (English spoken with an Indian accent).
-  The Node server picks which one to call per sentence just by checking
-  whether that sentence contains Devanagari script.
+- **Text-to-speech:** OpenAI's TTS API (`src/services/openaiTts.ts`,
+  `tts-1` by default). The Node server picks which per-agent voice to use
+  per sentence just by checking whether that sentence contains Devanagari
+  script (see `voices.ts` for the voice catalog).
 
 Text streams from GPT straight into TTS sentence-by-sentence (instead of
 waiting for the full reply), and the agent supports **barge-in**: if the
 caller starts talking while the agent is still speaking, playback stops
 immediately and the agent listens, the way a real conversation works.
+
+### Switching speech providers
+
+Speech defaults to OpenAI's hosted APIs because the fully self-hosted
+pipeline's models (Whisper + Piper + MeloTTS all loaded at once) need
+1GB+ of RAM, which doesn't fit alongside other things on a small VPS. If
+you have the RAM to spare (or want zero per-call API cost, or want audio
+never leaving your own server), the self-hosted pipeline is still in this
+repo and fully working:
+
+1. Point `src/services/callSession.ts`'s and `src/routes/api.ts`'s
+   `synthesizeSpeech`/`synthesizeWithVoice`/`transcribeSpeech` imports back
+   at `./localTts` / `./localStt` instead of `./openaiTts` / `./openaiStt`.
+2. Revert `voices.ts`'s `VOICE_CATALOG` to Piper/MeloTTS voice ids (see git
+   history, or `tts-service/README.md` for what's available).
+3. Set up `tts-service/` per its own README (below) and run the
+   `voice-speech` systemd service again.
 
 ## How a call flows
 
