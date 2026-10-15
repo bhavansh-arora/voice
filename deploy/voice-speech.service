@@ -1,6 +1,12 @@
 [Unit]
 Description=Voice Agent - local speech microservice (Whisper/Piper/MeloTTS)
 After=network.target
+# Give up after 5 crashes in 10 minutes instead of crash-looping forever --
+# on a memory-constrained host, an endless restart cycle (each attempt
+# reloading Whisper/Piper/MeloTTS into memory) is what drags every other
+# site on the box down, not just this one failing to start.
+StartLimitIntervalSec=600
+StartLimitBurst=5
 
 [Service]
 Type=simple
@@ -9,6 +15,14 @@ ExecStart=__REPO_DIR__/tts-service/.venv/bin/uvicorn server:app --host 127.0.0.1
 Restart=on-failure
 RestartSec=3
 User=__SERVICE_USER__
+# Hard-caps this service's own memory/CPU so it can never starve the other
+# sites sharing this host -- without this, the kernel's OOM killer picks a
+# victim from the whole system when memory runs out, which can mean killing
+# Postgres or MongoDB instead of the actual offender. MemoryHigh throttles
+# before MemoryMax forces a kill, so it degrades gracefully where possible.
+MemoryHigh=850M
+MemoryMax=1000M
+CPUQuota=100%
 
 [Install]
 WantedBy=multi-user.target
