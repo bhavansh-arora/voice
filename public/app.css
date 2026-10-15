@@ -6,14 +6,25 @@
   --border: #dde2e8;
   --text: #1a1f26;
   --muted: #677180;
-  --accent: #2563eb;
-  --accent-2: #1d4ed8;
-  --accent-dim: #2563eb14;
+  --accent: #3454a7;
+  --accent-2: #283f80;
+  --accent-dim: #3454a714;
   --user: #15803d;
   --agent: #b45309;
   --error: #dc2626;
   --radius: 10px;
   --sidebar-w: 252px;
+
+  /* Sidebar / topbar - deliberately a darker, separate surface from the
+     rest of the (light) app, like most SaaS dashboards. */
+  --sidebar-bg: #0f1a30;
+  --sidebar-bg-hover: #192845;
+  --sidebar-border: #1f2f4e;
+  --sidebar-text: #e2e8f4;
+  --sidebar-text-dim: #8b99b8;
+  --sidebar-active-bg: #3454a733;
+  --sidebar-active-text: #ffffff;
+  --sidebar-accent: #6f8fe0;
 }
 
 * { box-sizing: border-box; }
@@ -45,8 +56,8 @@ a:hover { text-decoration: underline; }
   position: fixed;
   inset: 0 auto 0 0;
   width: var(--sidebar-w);
-  background: var(--panel);
-  border-right: 1px solid var(--border);
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
   display: flex;
   flex-direction: column;
   z-index: 40;
@@ -62,7 +73,7 @@ a:hover { text-decoration: underline; }
   width: 32px;
   height: 32px;
   border-radius: 9px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  background: linear-gradient(135deg, var(--sidebar-accent), var(--accent));
   color: #fff;
   display: flex;
   align-items: center;
@@ -70,9 +81,8 @@ a:hover { text-decoration: underline; }
   font-weight: 700;
   font-size: 14px;
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
 }
-.sidebar-brand .name { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
+.sidebar-brand .name { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; color: var(--sidebar-text); }
 
 .sidebar-agent { padding: 0 14px 14px; }
 .sidebar-agent label {
@@ -81,18 +91,18 @@ a:hover { text-decoration: underline; }
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--muted);
+  color: var(--sidebar-text-dim);
   margin: 0 4px 6px;
 }
 .sidebar-agent select {
   width: 100%;
-  background: var(--panel-2);
-  border: 1px solid var(--border);
+  background: var(--sidebar-bg-hover);
+  border: 1px solid var(--sidebar-border);
   border-radius: 8px;
   padding: 8px 10px;
   font-size: 13.5px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--sidebar-text);
   font-family: inherit;
 }
 
@@ -110,14 +120,14 @@ a:hover { text-decoration: underline; }
   gap: 11px;
   padding: 9px 12px;
   border-radius: 8px;
-  color: var(--muted);
+  color: var(--sidebar-text-dim);
   font-size: 14px;
   font-weight: 500;
   position: relative;
 }
 .sidebar-nav a svg { width: 18px; height: 18px; flex-shrink: 0; }
-.sidebar-nav a:hover { background: var(--panel-2); color: var(--text); text-decoration: none; }
-.sidebar-nav a.active { background: var(--accent-dim); color: var(--accent-2); }
+.sidebar-nav a:hover { background: var(--sidebar-bg-hover); color: var(--sidebar-text); text-decoration: none; }
+.sidebar-nav a.active { background: var(--sidebar-active-bg); color: var(--sidebar-active-text); }
 .sidebar-nav a.active::before {
   content: "";
   position: absolute;
@@ -126,24 +136,24 @@ a:hover { text-decoration: underline; }
   bottom: 6px;
   width: 3px;
   border-radius: 2px;
-  background: var(--accent);
+  background: var(--sidebar-accent);
 }
 
 .sidebar-footer {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--sidebar-border);
   padding: 10px;
 }
 .sidebar-footer button {
   width: 100%;
   background: transparent;
-  color: var(--muted);
+  color: var(--sidebar-text-dim);
   border: none;
   justify-content: flex-start;
   padding: 9px 10px;
   font-weight: 500;
 }
 .sidebar-footer button svg { width: 17px; height: 17px; }
-.sidebar-footer button:hover { background: #fef2f2; color: var(--error); }
+.sidebar-footer button:hover { background: rgba(220, 38, 38, 0.18); color: #f3a3a3; }
 
 .sidebar-backdrop {
   position: fixed;
@@ -159,18 +169,19 @@ a:hover { text-decoration: underline; }
   justify-content: space-between;
   gap: 10px;
   padding: 12px 16px;
-  background: var(--panel);
-  border-bottom: 1px solid var(--border);
+  background: var(--sidebar-bg);
+  border-bottom: 1px solid var(--sidebar-border);
+  color: var(--sidebar-text);
   position: sticky;
   top: 0;
   z-index: 30;
 }
-.topbar .brand { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 15px; }
+.topbar .brand { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 15px; color: var(--sidebar-text); }
 .topbar .mark {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  background: linear-gradient(135deg, var(--sidebar-accent), var(--accent));
   color: #fff;
   display: flex;
   align-items: center;
@@ -179,9 +190,9 @@ a:hover { text-decoration: underline; }
   font-size: 13px;
 }
 .topbar button.menu-btn {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  color: var(--text);
+  background: var(--sidebar-bg-hover);
+  border: 1px solid var(--sidebar-border);
+  color: var(--sidebar-text);
   padding: 7px;
   border-radius: 8px;
 }
@@ -240,19 +251,19 @@ h2 { font-size: 16px; margin: 0 0 12px; }
   align-items: center;
   justify-content: center;
   margin-bottom: 10px;
+  /* Monochrome by design - one accent color for every stat card's icon,
+     not a different hue per card. */
+  background: var(--accent-dim);
+  color: var(--accent);
 }
 .stat-card .icon svg { width: 17px; height: 17px; }
 .stat-card .label { color: var(--muted); font-size: 12.5px; }
 .stat-card .value { font-size: 20px; font-weight: 700; margin-top: 2px; letter-spacing: -0.01em; }
-.stat-card.c-blue .icon { background: #2563eb14; color: var(--accent); }
-.stat-card.c-green .icon { background: #15803d14; color: var(--user); }
-.stat-card.c-amber .icon { background: #b4530914; color: var(--agent); }
-.stat-card.c-purple .icon { background: #7c3aed14; color: #7c3aed; }
 
 /* --- Instructional callouts --- */
 .howto {
   background: var(--accent-dim);
-  border: 1px solid #2563eb33;
+  border: 1px solid #3454a733;
   border-radius: var(--radius);
   padding: 16px 20px;
   margin-bottom: 20px;
