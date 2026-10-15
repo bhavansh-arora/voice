@@ -24,6 +24,7 @@
       <button class="secondary small" id="backBtn">← Back to list</button>
       <h2 style="margin-top:14px">Recording</h2>
       <audio id="player" controls style="width:100%"></audio>
+      <a id="downloadLink" class="btn secondary small" style="margin-top:10px" download>⬇ Download recording (.wav)</a>
       <h2 style="margin-top:20px">Collected data</h2>
       <div id="collectedData"></div>
       <h2 style="margin-top:20px">Transcript</h2>
@@ -74,6 +75,9 @@
     document.getElementById("detailCard").style.display = "";
 
     document.getElementById("player").src = recordingUrl(callId);
+    const downloadLink = document.getElementById("downloadLink");
+    downloadLink.href = recordingUrl(callId);
+    downloadLink.download = `call-${callId}.wav`;
 
     const dataEl = document.getElementById("collectedData");
     const entries = Object.entries(call.collectedData);
