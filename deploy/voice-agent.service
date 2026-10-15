@@ -13,12 +13,6 @@ ExecStart=/usr/bin/node __REPO_DIR__/dist/server.js
 Restart=on-failure
 RestartSec=3
 User=__SERVICE_USER__
-# Same reasoning as voice-speech.service's limits -- this process is
-# normally lightweight (tens of MB), so this cap is a safety net, not a
-# real constraint on normal operation.
-MemoryHigh=200M
-MemoryMax=256M
-CPUQuota=50%
 
 [Install]
 WantedBy=multi-user.target
