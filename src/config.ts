@@ -39,7 +39,12 @@ export const config = {
     // tts-service/ (still in the repo, unused by default) after that
     // pipeline's memory footprint (1GB+) proved too large to share a small
     // VPS with other sites.
-    ttsModel: process.env.OPENAI_TTS_MODEL ?? "tts-1",
+    //
+    // gpt-4o-mini-tts (not tts-1) specifically because it's the only OpenAI
+    // TTS model that follows an "instructions" prompt describing delivery
+    // style (accent, warmth, pitch variation) -- see DELIVERY_INSTRUCTIONS
+    // in openaiTts.ts. tts-1/tts-1-hd ignore that field and sound flat.
+    ttsModel: process.env.OPENAI_TTS_MODEL ?? "gpt-4o-mini-tts",
     sttModel: process.env.OPENAI_STT_MODEL ?? "whisper-1",
   },
 

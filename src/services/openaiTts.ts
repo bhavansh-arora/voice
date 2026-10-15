@@ -25,19 +25,42 @@ export interface VoiceChoice {
   voiceEn: string;
 }
 
-async function callSynthesize(text: string, voice: string): Promise<Buffer> {
+// Delivery instructions per language -- only gpt-4o-mini-tts actually
+// follows these (tts-1/tts-1-hd ignore any "instructions" field, so this
+// is only sent for that model). Without this, tts-1's output is flat and
+// has no inflection at all, which is the "robotic" sound.
+const DELIVERY_INSTRUCTIONS: Record<"en" | "hi", string> = {
+  en:
+    process.env.OPENAI_TTS_INSTRUCTIONS_EN ??
+    "Speak naturally with an Indian English accent, like a warm, friendly " +
+      "call-center agent having a real conversation. Vary your pitch and " +
+      "pacing the way a person actually talking does -- avoid a flat, " +
+      "monotone, or robotic delivery.",
+  hi:
+    process.env.OPENAI_TTS_INSTRUCTIONS_HI ??
+    "एक गर्मजोशी से भरे, मित्रवत कॉल-सेंटर एजेंट की तरह स्वाभाविक रूप से बोलें, " +
+      "जैसे कोई असली बातचीत कर रहा हो। आवाज़ में उतार-चढ़ाव और स्वाभाविक गति रखें -- " +
+      "सपाट, नीरस या यंत्रवत (robotic) अंदाज़ में बोलने से बचें।",
+};
+
+async function callSynthesize(text: string, voice: string, language: "en" | "hi"): Promise<Buffer> {
+  const body: Record<string, unknown> = {
+    model: config.openai.ttsModel,
+    voice,
+    input: text,
+    response_format: "wav",
+  };
+  if (config.openai.ttsModel === "gpt-4o-mini-tts") {
+    body.instructions = DELIVERY_INSTRUCTIONS[language];
+  }
+
   const res = await fetch("https://api.openai.com/v1/audio/speech", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${config.openai.apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      model: config.openai.ttsModel,
-      voice,
-      input: text,
-      response_format: "wav",
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!res.ok) {
@@ -59,10 +82,10 @@ async function callSynthesize(text: string, voice: string): Promise<Buffer> {
 export async function synthesizeSpeech(text: string, voices: VoiceChoice): Promise<Buffer> {
   const language = detectSpokenLanguage(text);
   const voice = resolveVoice(language === "hi" ? voices.voiceHi : voices.voiceEn, language);
-  return callSynthesize(text, voice);
+  return callSynthesize(text, voice, language);
 }
 
 /** Synthesizes with a specific voice explicitly - used by the voice-picker preview, not auto-detected. */
 export async function synthesizeWithVoice(text: string, language: "en" | "hi", voiceId: string): Promise<Buffer> {
-  return callSynthesize(text, resolveVoice(voiceId, language));
+  return callSynthesize(text, resolveVoice(voiceId, language), language);
 }
