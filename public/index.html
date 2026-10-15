@@ -6,19 +6,54 @@
 <link rel="stylesheet" href="app.css" />
 </head>
 <body>
-  <div class="nav">
-    <span class="brand">Voice Agent</span>
-    <a href="index.html" class="active">Home</a>
-    <a href="setup.html">Setup</a>
-    <a href="voices.html">Voices</a>
-    <a href="telephony.html">Telephony</a>
-    <a href="calls.html">Calls</a>
-    <a href="dashboard.html">Test</a>
-  </div>
-
   <div class="page">
-    <h1>Your agents</h1>
-    <p class="subtitle">Pick an agent to configure, or create a new one. Everything else (Setup, Voices, Telephony, Calls, Test) works on whichever one you select here.</p>
+    <div class="page-header">
+      <div>
+        <h1>Dashboard</h1>
+        <p class="subtitle">An overview of every agent and the calls they've handled.</p>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card c-blue">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="8" r="3"/><circle cx="17" cy="9.5" r="2.3"/>
+            <path d="M3.5 19c0-3.3 2.5-5.8 5.5-5.8s5.5 2.5 5.5 5.8"/>
+            <path d="M15 19c0-2.2 1.4-4.1 3.3-4.9"/>
+          </svg>
+        </div>
+        <div class="label">Agents</div>
+        <div class="value" id="statAgents">—</div>
+      </div>
+      <div class="stat-card c-green">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/><polyline points="8 12.5 11 15.5 16.5 9"/>
+          </svg>
+        </div>
+        <div class="label">Active</div>
+        <div class="value" id="statActive">—</div>
+      </div>
+      <div class="stat-card c-amber">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="label">Calls today</div>
+        <div class="value" id="statCallsToday">—</div>
+      </div>
+      <div class="stat-card c-purple">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+        </div>
+        <div class="label">Total calls</div>
+        <div class="value" id="statCallsTotal">—</div>
+      </div>
+    </div>
 
     <div class="howto">
       <strong>First time here? Set up an agent in four steps:</strong>
@@ -31,8 +66,9 @@
     </div>
 
     <div class="card">
+      <h2>Your agents</h2>
       <table>
-        <thead><tr><th>Name</th><th>Status</th><th>Created</th></tr></thead>
+        <thead><tr><th>Name</th><th>Status</th><th>Calls</th><th>Created</th></tr></thead>
         <tbody id="agentsBody"></tbody>
       </table>
       <div id="emptyMsg" class="empty" style="display:none">No agents yet - create your first one below.</div>
@@ -56,25 +92,45 @@
     location.href = "setup.html";
   }
 
-  async function load() {
-    const agents = await AdminApp.apiJson("/agents");
+  function isToday(isoDate) {
+    const d = new Date(isoDate);
+    const now = new Date();
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+  }
+
+  function renderStats(agents, calls) {
+    document.getElementById("statAgents").textContent = agents.length;
+    document.getElementById("statActive").textContent = agents.filter((a) => a.status === "active").length;
+    document.getElementById("statCallsTotal").textContent = calls.length;
+    document.getElementById("statCallsToday").textContent = calls.filter((c) => isToday(c.startedAt)).length;
+  }
+
+  function renderAgents(agents, calls) {
     const body = document.getElementById("agentsBody");
     document.getElementById("emptyMsg").style.display = agents.length ? "none" : "";
 
     body.innerHTML = agents
-      .map(
-        (a) => `
+      .map((a) => {
+        const callCount = calls.filter((c) => c.agentId === a.id).length;
+        return `
       <tr data-id="${a.id}">
         <td>${escapeHtml(a.name)}</td>
         <td><span class="status ${a.status}">${a.status}</span></td>
+        <td>${callCount}</td>
         <td>${new Date(a.createdAt).toLocaleDateString()}</td>
-      </tr>`
-      )
+      </tr>`;
+      })
       .join("");
 
     body.querySelectorAll("tr").forEach((row) => {
       row.addEventListener("click", () => selectAgent(row.dataset.id));
     });
+  }
+
+  async function load() {
+    const [agents, calls] = await Promise.all([AdminApp.apiJson("/agents"), AdminApp.apiJson("/calls")]);
+    renderStats(agents, calls);
+    renderAgents(agents, calls);
   }
 
   document.getElementById("createBtn").addEventListener("click", async () => {
