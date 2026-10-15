@@ -28,7 +28,14 @@ export function parseWav(buffer: Buffer): DecodedWav {
       bitsPerSample = buffer.readUInt16LE(bodyStart + 14);
     } else if (chunkId === "data") {
       dataStart = bodyStart;
-      dataLength = chunkSize;
+      // Some encoders (e.g. OpenAI's TTS API, which can generate the
+      // response via internal streaming) write a placeholder/max size here
+      // (seen as 0xFFFFFFFF) rather than the real byte count, since the
+      // final length isn't known when the header is written. Clamp to
+      // what's actually in the buffer instead of trusting this field
+      // blindly -- otherwise this can try to allocate a multi-GB
+      // Int16Array below and crash with "Array buffer allocation failed".
+      dataLength = Math.min(chunkSize, buffer.length - bodyStart);
     }
 
     // Chunks are word-aligned - an odd-sized chunk has a padding byte after it.
